@@ -1,19 +1,33 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { ApolloProvider } from "react-apollo-hooks";
+import * as Permissions from "expo-permissions";
+import { Notifications } from "expo";
+import client from "./apollo";
+import Chat from "./Chat";
 
 export default function App() {
+  const [notificationStatus, setStatus] = useState(false);
+
+  const ask = async () => {
+    const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+    setStatus(status as any);
+    console.log(status);
+
+    try {
+      let token = await Notifications.getExpoPushTokenAsync();
+      console.log(token);
+      Notifications.setBadgeNumberAsync(0);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    ask();
+  }, []);
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-    </View>
+    <ApolloProvider client={client}>
+      <Chat />
+    </ApolloProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
